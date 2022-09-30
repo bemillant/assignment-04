@@ -2,43 +2,51 @@ namespace Assignment.Infrastructure;
 
 public class KanbanContext : DbContext
 {
-    public DbSet<WorkItem> Items => Set<WorkItem>();
-    public DbSet<Tag> Tags => Set<Tag>();
-    public DbSet<User> Users => Set<User>();
-
-    public KanbanContext(DbContextOptions<KanbanContext> options)
-        : base(options)
+    public KanbanContext(DbContextOptions<KanbanContext> options) : base(options)
     {
     }
 
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<Task> Tasks => Set<Task>();
+    public DbSet<User> Users => Set<User>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<WorkItem>()
-                    .Property(i => i.Title)
-                    .HasMaxLength(100);
+        //Making the enum to string
+        modelBuilder
+            .Entity<Task>()
+            .Property(e => e.State)
+            .HasConversion(
+                s => s.ToString(),
+                s => (State)Enum.Parse(typeof(State), s));
 
-        modelBuilder.Entity<WorkItem>()
-                    .Property(e => e.State)
-                    .HasConversion(new EnumToStringConverter<State>(new ConverterMappingHints(size: 50)));
-
-        modelBuilder.Entity<User>()
-                    .Property(i => i.Name)
-                    .HasMaxLength(100);
-
-        modelBuilder.Entity<User>()
-                    .Property(i => i.Email)
-                    .HasMaxLength(100);
+        //Making title required and setting length to be max 100
+        modelBuilder.Entity<Task>()
+            .Property(t => t.Title)
+            .HasMaxLength(100)
+            .IsRequired();
 
         modelBuilder.Entity<User>()
-                    .HasIndex(i => i.Email)
-                    .IsUnique();
+            .Property(u => u.Name)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.Email)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
 
         modelBuilder.Entity<Tag>()
-                    .Property(i => i.Name)
-                    .HasMaxLength(50);
+            .Property(t => t.Name)
+            .HasMaxLength(50)
+            .IsRequired();
 
         modelBuilder.Entity<Tag>()
-                    .HasIndex(i => i.Name)
-                    .IsUnique();
+            .HasIndex(t => t.Name)
+            .IsUnique();
     }
 }

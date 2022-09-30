@@ -1,14 +1,14 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Assignment.Infrastructure;
 
 public class Tag
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public ICollection<WorkItem> WorkItems { get; set; }
+    [Key] public int Id { get; set; }
 
-    public Tag(string name)
-    {
-        Name = name;
-        WorkItems = new HashSet<WorkItem>();
-    }
+    [Required][StringLength(50)] public string Name { get; set; }
+
+    public ICollection<Task>? Tasks { get; set; }
+
+
 }
