@@ -89,7 +89,10 @@ public class TaskRepository : ITaskRepository
         var list = new List<TaskDTO>();
         foreach (var task in context.Tasks)
         {
-            list.Add(new TaskDTO(task.Id, task.Title, task.AssignedTo.Name, task.Tags.Select(t => t.Name).ToList(), task.State));
+            var asToNa = task.AssignedTo is not null ? context.Users.Find(task.AssignedTo.Id)!.Name : null;
+            IReadOnlyCollection<string>? tags = task.Tags is not null ? task.Tags.Select(t => t.Name).ToList().AsReadOnly() : null;
+
+            list.Add(new TaskDTO(task.Id, task.Title, asToNa, tags, task.State));
         }
         return list;
     }
@@ -101,7 +104,10 @@ public class TaskRepository : ITaskRepository
         {
             if (task.State == State)
             {
-                list.Add(new TaskDTO(task.Id, task.Title, task.AssignedTo.Name, task.Tags.Select(t => t.Name).ToList(), task.State));
+                var asToNa = task.AssignedTo is not null ? context.Users.Find(task.AssignedTo)!.Name : null;
+                IReadOnlyCollection<string>? tags = task.Tags is not null ? task.Tags.Select(t => t.Name).ToList().AsReadOnly() : null;
+
+                list.Add(new TaskDTO(task.Id, task.Title, asToNa, tags, task.State));
             }
         }
         return list;
@@ -113,11 +119,17 @@ public class TaskRepository : ITaskRepository
         var list = new List<TaskDTO>();
         foreach (var task in context.Tasks)
         {
-            foreach (var t in task.Tags)
+            if (task.Tags is not null)
             {
-                if (t.Name.Equals(tag))
+                foreach (var t in task.Tags)
                 {
-                    list.Add(new TaskDTO(task.Id, task.Title, task.AssignedTo.Name, task.Tags.Select(t => t.Name).ToList(), task.State));
+                    if (t.Name.Equals(tag))
+                    {
+                        var asToNa = task.AssignedTo is not null ? context.Users.Find(task.AssignedTo)!.Name : null;
+                        IReadOnlyCollection<string>? tags = task.Tags is not null ? task.Tags.Select(t => t.Name).ToList().AsReadOnly() : null;
+
+                        list.Add(new TaskDTO(task.Id, task.Title, asToNa, tags, task.State));
+                    }
                 }
             }
         }
@@ -129,9 +141,14 @@ public class TaskRepository : ITaskRepository
         var list = new List<TaskDTO>();
         foreach (var task in context.Tasks)
         {
-            if (task.AssignedTo.Id == userId)
+            if (task.AssignedTo is not null)
             {
-                list.Add(new TaskDTO(task.Id, task.Title, task.AssignedTo.Name, task.Tags.Select(t => t.Name).ToList(), task.State));
+                if (task.AssignedTo.Id == userId)
+                {
+                    IReadOnlyCollection<string>? tags = task.Tags is not null ? task.Tags.Select(t => t.Name).ToList().AsReadOnly() : null;
+
+                    list.Add(new TaskDTO(task.Id, task.Title, context.Users.Find(userId).Name, tags, task.State));
+                }
             }
         }
         return list;
@@ -144,7 +161,10 @@ public class TaskRepository : ITaskRepository
         {
             if (task.State == State.Removed)
             {
-                list.Add(new TaskDTO(task.Id, task.Title, task.AssignedTo.Name, task.Tags.Select(t => t.Name).ToList(), task.State));
+                var asToNa = task.AssignedTo is not null ? context.Users.Find(task.AssignedTo)!.Name : null;
+                IReadOnlyCollection<string>? tags = task.Tags is not null ? task.Tags.Select(t => t.Name).ToList().AsReadOnly() : null;
+
+                list.Add(new TaskDTO(task.Id, task.Title, asToNa, tags, task.State));
             }
         }
         return list;
@@ -183,7 +203,7 @@ public class TaskRepository : ITaskRepository
                     {
                         if (conTag.Name == tag)
                         {
-                            entity.Tags.Add(context.Tags.Find(conTag.Id));
+                            entity.Tags.Add(context.Tags.Find(conTag.Id)!);
                         }
                     }
                 }
